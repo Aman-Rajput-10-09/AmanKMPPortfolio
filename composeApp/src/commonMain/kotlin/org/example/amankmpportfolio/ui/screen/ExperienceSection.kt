@@ -33,42 +33,7 @@ data class Experience(
 @Composable
 fun ExperienceScreen() {
     val experiences = listOf(
-        Experience(
-            "Android Developer",
-            "PGI Oral Department",
-            "Jan 2025 – Present",
-            listOf(
-                "Built a Patient Tracker app using Kotlin, Firestore & ML Kit.",
-                "Integrated OCR, barcode scanning, role-based login.",
-                "Implemented RecyclerView for real-time patient data display."
-            )
-        ),
-        Experience(
-            "Android Developer Lead",
-            "P-Club, UIET",
-            "Dec 2024 – Present",
-            listOf(
-                "Led Android workshops & mentorship sessions.",
-                "Organized weekly dev progress meetups."
-            )
-        ),
-        Experience(
-            "Event Manager",
-            "STAR, UIET",
-            "Nov 2024 – Present",
-            listOf(
-                "Calls and promotions",
-                "Handled registration & on-site logistics."
-            )
-        ),
-        Experience(
-            "Summer Training",
-            "Prof. Mandeep",
-            "45 Days",
-            listOf(
-                "Completed summer training under Prof. Mandeep Kaur"
-            )
-        ),
+
         Experience(
             "Freelancer",
             "Self-Projects",
@@ -77,15 +42,59 @@ fun ExperienceScreen() {
                 "Developed 2 IT products for freelancing clients."
             )
         ),
+
         Experience(
-            "Paid Intern",
-            "Australia based company - Jim's Test & Tag (Plympton)",
-            "2025 – Ongoing",
+            "Android Developer Lead",
+            "P-Club, UIET",
+            "Dec 2024 – Dec 2025",
             listOf(
-                "Working on IT product development."
+                "Led Android workshops & mentorship sessions.",
+                "Organized weekly development progress meetups."
+            )
+        ),
+
+        Experience(
+            "Android Developer",
+            "PGI Oral Department",
+            "Jan 2025 – Jul 2025",
+            listOf(
+                "Built a Patient Tracker app using Kotlin, Firestore & ML Kit.",
+                "Integrated OCR, barcode scanning, and role-based authentication.",
+                "Implemented RecyclerView for real-time patient data updates."
+            )
+        ),
+
+        Experience(
+            "Event Manager",
+            "STAR, UIET",
+            "Jun 2025 – Jul 2025",
+            listOf(
+                "Developed a Mess Management System with separate Android apps for Students and Canteen using Kotlin, Jetpack Compose, MVVM, Dagger-Hilt, and Firebase.",
+                "Implemented data encryption and ProGuard 8 for security and code optimization."
+            )
+        ),
+
+        Experience(
+            "Software Development Engineer",
+            "ITfy Info Solutions Private Limited",
+            "45 Days",
+            listOf(
+                "Completed summer training under Prof. Mandeep Kaur."
+            )
+        ),
+
+        Experience(
+            "Android Developer",
+            "Stoxfarm India Private Limited",
+            "Feb 2026 – Present",
+            listOf(
+                "Developing Android applications using Kotlin and Jetpack Compose.",
+                "Implementing scalable UI architectures and backend integrations.",
+                "Contributing to production-level mobile application features."
             )
         )
     )
+
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val isSmallScreen = maxWidth < 600.dp

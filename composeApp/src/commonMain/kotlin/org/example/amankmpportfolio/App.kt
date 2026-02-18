@@ -1,13 +1,13 @@
 package org.example.amankmpportfolio
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material.icons.filled.VolumeUp
@@ -19,303 +19,343 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.example.amankmpportfolio.audio.rememberAudioPlayerLooping
 import org.example.amankmpportfolio.ui.screen.*
-import org.example.amankmpportfolio.audio.*
 
+/* -------------------------------
+   Navigation Model
+-------------------------------- */
+
+enum class Screen(val title: String) {
+    Introduction("Introduction"),
+    Skills("Skills"),
+    Experience("Experience"),
+    Project("Project"),
+    Contact("Contact")
+}
+
+val allScreens = Screen.entries
+
+/* -------------------------------
+   Main App
+-------------------------------- */
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun App() {
-    var currentScreen by remember { mutableStateOf("Introduction") }
-    var isLeftSide by remember { mutableStateOf(true) } // black hole starts on right
+
+    var currentScreen by remember { mutableStateOf(Screen.Introduction) }
     var isPlaying by remember { mutableStateOf(false) }
 
-
-    // Animations
-    val driftX = remember { Animatable(0f) }
-    val driftY = remember { Animatable(0f) }
-    val rotation = remember { Animatable(0f) }
+    val animationState = rememberBlackHoleAnimation()
 
     val audioPlayer = rememberAudioPlayerLooping()
 
-    // Release audio when leaving
     DisposableEffect(Unit) {
         onDispose { audioPlayer.release() }
     }
 
-    LaunchedEffect(Unit) {
-        while (true) {
-            driftX.animateTo(((-20..20).random()).toFloat(), tween(2500))
-            driftY.animateTo(((-15..15).random()).toFloat(), tween(2500))
-            rotation.animateTo(rotation.value + (-10..10).random(), tween(2500))
-        }
-    }
-
     MaterialTheme {
-        StarryBackground(modifier = Modifier.fillMaxSize())
 
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        StarryBackground(Modifier.fillMaxSize())
+
+        BoxWithConstraints {
+
             val isSmallScreen = maxWidth < 600.dp
 
             if (isSmallScreen) {
-                // Small screen: top nav + black hole + content below
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.End)
-                    ) {
-                        IconButton(onClick = {
-                            if (isPlaying) {
-                                audioPlayer.pause()
-                            } else {
-                                audioPlayer.play()
-                            }
-                            isPlaying = !isPlaying
-                        }) {
-                            Icon(
-                                imageVector = if (isPlaying) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
-                                contentDescription = "Toggle Sound",
-                                tint = Color.White
-                            )
-                        }
-                    }
 
-                    // --- Top Navigation Bar ---
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(Color(0xFF0D0D30), Color(0xFF1C1C3A))
-                                ),
-                                shape = RoundedCornerShape(24.dp)
-                            )
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        @OptIn(ExperimentalLayoutApi::class)
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            val screens = listOf(
-                                "Introduction",
-                                "Skills",
-                                "Experience",
-                                "Project",
-                                "Contact"
-                            )
-                            screens.forEach { screen ->
-                                Row(
-                                    modifier = Modifier
-                                        .background(
-                                            color = if (currentScreen == screen) Color(
-                                                0xFF203A43
-                                            ) else Color.Transparent,
-                                            shape = RoundedCornerShape(16.dp)
-                                        )
-                                        .clickable { currentScreen = screen }
-                                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Text(
-                                        text = screen,
-                                        color = Color.White,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                            }
-                        }
+                SmallScreenLayout(
+                    currentScreen,
+                    onScreenChange = { currentScreen = it },
+                    animationState,
+                    isPlaying,
+                    onToggleAudio = {
+                        isPlaying = !isPlaying
+                        if (isPlaying) audioPlayer.play()
+                        else audioPlayer.pause()
                     }
+                )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // --- Black Hole in Center ---
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth().height(350.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        AnimatedBlackHole(
-                            finalOffset = Offset(0f, 50f),
-                            modifier = Modifier.graphicsLayer {
-                                translationX = driftX.value
-                                translationY = driftY.value
-                                rotationZ = rotation.value
-                            }
-                        )
-                    }
-
-                    // --- Screen Content below Black Hole ---
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        when (currentScreen) {
-                            "Introduction" -> Introduction()
-                            "Skills" -> TechnologyScreen()
-                            "Experience" -> ExperienceScreen()
-                            "Project" -> ProjectScreen()
-                            "Contact" -> ContactScreen()
-                        }
-                    }
-                }
             } else {
-                // Large screens: original black hole layout
-                // Large screens: show sidebar + black hole layout
-                Box(modifier = Modifier.fillMaxSize().padding(25.dp)) {
 
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(16.dp)
-                    ) {
-                        IconButton(onClick = {
-                            if (isPlaying) {
-                                audioPlayer.pause()
-                            } else {
-                                audioPlayer.play()
-                            }
-                            isPlaying = !isPlaying
-                        }) {
-                            Icon(
-                                imageVector = if (isPlaying) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
-                                contentDescription = "Toggle Sound",
-                                tint = Color.White
-                            )
-                        }
+                LargeScreenLayout(
+                    currentScreen,
+                    onScreenChange = { currentScreen = it },
+                    animationState,
+                    isPlaying,
+                    onToggleAudio = {
+                        isPlaying = !isPlaying
+                        if (isPlaying) audioPlayer.play()
+                        else audioPlayer.pause()
                     }
-
-                    // --- Cosmic Sidebar Navigation ---
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .width(120.dp)
-                            .align(Alignment.CenterStart)
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(Color(0xFF0D0D30), Color(0xFF1C1C3A)),
-                                    startY = 0f,
-                                    endY = Float.POSITIVE_INFINITY
-                                ),
-                                shape = RoundedCornerShape(32.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            verticalArrangement = Arrangement.SpaceEvenly,
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxHeight()
-                        ) {
-                            val screens = listOf(
-                                "Introduction",
-                                "Skills",
-                                "Experience",
-                                "Project",
-                                "Contact"
-                            )
-                            screens.forEach { screen ->
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp, horizontal = 8.dp)
-                                        .background(
-                                            color = if (currentScreen == screen) Color(
-                                                0xFF203A43
-                                            ) else Color.Transparent,
-                                            shape = RoundedCornerShape(16.dp) // small rounded corners
-                                        )
-                                        .clickable { currentScreen = screen }
-                                        .padding(vertical = 8.dp), // padding inside card
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = screen,
-                                        color = Color.White,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier.graphicsLayer {
-                                            // Slight floating effect for active screen
-                                            if (currentScreen == screen) translationY =
-                                                (-3..3).random().toFloat()
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // --- Main Black Hole Layout ---
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(start = 120.dp, top = 32.dp), // leave space for sidebar
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        // LEFT BOX
-                        Box(
-                            modifier = Modifier.weight(1f).fillMaxHeight(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (isLeftSide) {
-                                AnimatedBlackHole(
-                                    finalOffset = Offset(0f, 50f),
-                                    modifier = Modifier.graphicsLayer {
-                                        translationX = driftX.value
-                                        translationY = driftY . value
-                                        rotationZ = rotation.value
-                                    })
-                            } else {
-                                when (currentScreen) {
-                                    "Introduction" -> Introduction()
-                                    "Skills" -> TechnologyScreen()
-                                    "Experience" -> ExperienceScreen()
-                                    "Project" -> ProjectScreen()
-                                    "Contact" -> ContactScreen()
-                                }
-                            }
-                        }
-                        // RIGHT BOX
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (!isLeftSide) {
-                                AnimatedBlackHole(
-                                    finalOffset = Offset(0f, 50f),
-                                    modifier = Modifier.graphicsLayer {
-                                        translationX = driftX.value
-                                        translationY = driftY.value
-                                        rotationZ = rotation.value
-                                    }
-                                )
-                            } else {
-                                when (currentScreen) {
-                                    "Introduction" -> Introduction()
-                                    "Skills" -> TechnologyScreen()
-                                    "Experience" -> ExperienceScreen()
-                                    "Project" -> ProjectScreen()
-                                    "Contact" -> ContactScreen()
-                                }
-                            }
-                        }
-                    }
-                }
+                )
             }
         }
+    }
+}
+
+/* -------------------------------
+   Animation State
+-------------------------------- */
+
+class BlackHoleAnimationState(
+    val driftX: Animatable<Float, AnimationVector1D>,
+    val driftY: Animatable<Float, AnimationVector1D>,
+    val rotation: Animatable<Float, AnimationVector1D>
+)
+
+@Composable
+fun rememberBlackHoleAnimation(): BlackHoleAnimationState {
+
+    val driftX = remember { Animatable(0f) }
+    val driftY = remember { Animatable(0f) }
+    val rotation = remember { Animatable(0f) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+
+            driftX.animateTo((-20..20).random().toFloat(), tween(2500))
+
+            driftY.animateTo((-15..15).random().toFloat(), tween(2500))
+
+            rotation.animateTo(
+                rotation.value + (-10..10).random(),
+                tween(2500)
+            )
+        }
+    }
+
+    return BlackHoleAnimationState(driftX, driftY, rotation)
+}
+
+/* -------------------------------
+   Small Screen Layout
+-------------------------------- */
+
+@Composable
+fun SmallScreenLayout(
+    currentScreen: Screen,
+    onScreenChange: (Screen) -> Unit,
+    animation: BlackHoleAnimationState,
+    isPlaying: Boolean,
+    onToggleAudio: () -> Unit
+) {
+
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+
+        AudioControlButton(isPlaying, onToggleAudio)
+
+        NavigationBar(
+            currentScreen,
+            onScreenChange
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        AnimatedBlackHole(
+            animation,
+            Modifier
+                .fillMaxWidth()
+                .height(350.dp)
+        )
+
+        ScreenContent(currentScreen)
+    }
+}
+
+/* -------------------------------
+   Large Screen Layout
+-------------------------------- */
+
+@Composable
+fun LargeScreenLayout(
+    currentScreen: Screen,
+    onScreenChange: (Screen) -> Unit,
+    animation: BlackHoleAnimationState,
+    isPlaying: Boolean,
+    onToggleAudio: () -> Unit
+) {
+
+    Box(Modifier.fillMaxSize().padding(24.dp)) {
+
+        AudioControlButton(
+            isPlaying,
+            onToggleAudio,
+            Modifier.align(Alignment.TopEnd)
+        )
+
+        SidebarNavigation(
+            currentScreen,
+            onScreenChange
+        )
+
+        Row(
+            Modifier
+                .fillMaxSize()
+                .padding(start = 120.dp)
+        ) {
+
+            Box(
+                Modifier.weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                AnimatedBlackHole(animation)
+            }
+
+            Box(
+                Modifier.weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                ScreenContent(currentScreen)
+            }
+        }
+    }
+}
+
+/* -------------------------------
+   Components
+-------------------------------- */
+
+@Composable
+fun AudioControlButton(
+    isPlaying: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+
+    IconButton(
+        onClick = onClick,
+        modifier = modifier
+    ) {
+
+        Icon(
+            if (isPlaying) Icons.Default.VolumeUp
+            else Icons.Default.VolumeOff,
+            contentDescription = "Audio Toggle",
+            tint = Color.White
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun NavigationBar(
+    currentScreen: Screen,
+    onScreenChange: (Screen) -> Unit
+) {
+
+    FlowRow(
+        Modifier
+            .fillMaxWidth()
+            .background(
+                Brush.horizontalGradient(
+                    listOf(
+                        Color(0xFF0D0D30),
+                        Color(0xFF1C1C3A)
+                    )
+                ),
+                RoundedCornerShape(24.dp)
+            )
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+
+        allScreens.forEach { screen ->
+
+            Text(
+                screen.title,
+                color = Color.White,
+                modifier = Modifier
+                    .background(
+                        if (screen == currentScreen)
+                            Color(0xFF203A43)
+                        else Color.Transparent,
+                        RoundedCornerShape(16.dp)
+                    )
+                    .clickable {
+                        onScreenChange(screen)
+                    }
+                    .padding(12.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun SidebarNavigation(
+    currentScreen: Screen,
+    onScreenChange: (Screen) -> Unit
+) {
+
+    Column(
+        Modifier
+            .fillMaxHeight()
+            .width(120.dp)
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        Color(0xFF0D0D30),
+                        Color(0xFF1C1C3A)
+                    )
+                ),
+                RoundedCornerShape(32.dp)
+            ),
+        verticalArrangement = Arrangement.SpaceEvenly,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        allScreens.forEach {
+
+            Text(
+                it.title,
+                color = Color.White,
+                modifier = Modifier
+                    .clickable {
+                        onScreenChange(it)
+                    }
+                    .padding(12.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun AnimatedBlackHole(
+    animation: BlackHoleAnimationState,
+    modifier: Modifier = Modifier
+) {
+
+    AnimatedBlackHole(
+        finalOffset = Offset(0f, 50f),
+        modifier = modifier.graphicsLayer {
+
+            translationX = animation.driftX.value
+            translationY = animation.driftY.value
+            rotationZ = animation.rotation.value
+        }
+    )
+}
+
+@Composable
+fun ScreenContent(screen: Screen) {
+
+    when (screen) {
+
+        Screen.Introduction -> Introduction()
+
+        Screen.Skills -> TechnologyScreen()
+
+        Screen.Experience -> ExperienceScreen()
+
+        Screen.Project -> ProjectScreen()
+
+        Screen.Contact -> ContactScreen()
     }
 }

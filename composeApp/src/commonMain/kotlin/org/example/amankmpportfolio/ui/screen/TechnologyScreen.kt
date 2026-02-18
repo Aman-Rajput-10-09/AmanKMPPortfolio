@@ -20,12 +20,67 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun TechnologyScreen() {
-    val skills = listOf(
-        "Kotlin", "C", "C++", "Python", "SQL",
-        "Jetpack Compose", "Firebase", "API Integration",
-        "Github", "Android SDK", "MVVM", "Clean Architecture",
-        "Compose Multiplatform", "DSA", "OOP", "UI/UX Design", "Problem Solving"
+    val skillCategories = mapOf(
+
+        "Languages" to listOf(
+            "Kotlin", "Python", "C/C++", "SQL"
+        ),
+
+        "Frameworks & Technologies" to listOf(
+            "Jetpack Compose",
+            "Compose Multiplatform",
+            "Android SDK",
+            "Spring Boot",
+            "Spring Security",
+        ),
+
+        "Backend & APIs" to listOf(
+            "RESTful APIs",
+            "WebSocket",
+            "Apache Kafka",
+            "Retrofit",
+            "OkHttp"
+        ),
+
+        "Databases" to listOf(
+            "PostgreSQL",
+            "Room Database",
+            "Firebase Firestore"
+        ),
+
+        "Architecture & Design Patterns" to listOf(
+            "MVVM",
+            "Clean Architecture"
+        ),
+
+        "Concurrency & Asynchronous Programming" to listOf(
+            "Kotlin Coroutines",
+            "Flow"
+        ),
+
+        "DevOps & Infrastructure" to listOf(
+            "Docker"
+        ),
+
+        "Tools & Development Environment" to listOf(
+            "Git",
+            "GitHub",
+            "Gradle",
+            "Android Studio",
+            "IntelliJ IDEA CE"
+        ),
+
+        "Computer Science Fundamentals" to listOf(
+            "Data Structures & Algorithms",
+            "Object-Oriented Programming",
+            "Operating Systems",
+            "Computer Networks",
+            "Artificial Intelligence",
+            "Machine Learning"
+        )
     )
+
+
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val isSmallScreen = maxWidth < 600.dp
@@ -52,7 +107,8 @@ fun TechnologyScreen() {
 
                     val row_count: Int = 2
 
-                    SkillGridInRows(skills, row_count)
+                    SkillCategoryList(skillCategories, row_count)
+
                 }
             }
         }
@@ -78,7 +134,8 @@ fun TechnologyScreen() {
                     Spacer(modifier = Modifier.height(24.dp))
 
                     val row_count: Int = 3
-                    SkillGridInRows(skills, row_count)
+                    SkillCategoryList(skillCategories, row_count)
+
                 }
             }
         }
@@ -140,5 +197,26 @@ fun SkillGridInRows(skills: List<String>, row_count: Int) {
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+fun SkillCategoryList(
+    categories: Map<String, List<String>>,
+    rowCount: Int
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+        categories.forEach { (category, skills) ->
+
+            Text(
+                text = category,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFBB86FC)
+            )
+
+            SkillGridInRows(skills, rowCount)
+        }
     }
 }
