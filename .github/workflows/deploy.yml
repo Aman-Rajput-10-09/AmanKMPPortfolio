@@ -1,0 +1,32 @@
+name: Deploy KMP Website to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master   # change if using main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Grant execute permission
+        run: chmod +x ./gradlew
+
+      - name: Build KMP WASM site
+        run: ./gradlew wasmJsBrowserDistribution
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: composeApp/build/dist/wasmJs/productionExecutable
